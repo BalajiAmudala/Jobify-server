@@ -7,6 +7,8 @@ import { nanoid } from "nanoid";
 import mongoose from "mongoose";
 //routers
 import jobRouter from "./routes/jobRouter.js";
+//middlewares
+import errorHandlerMiddleware from "./middleware/errorHandlerMiddleware.js";
 let jobs = [
   {
     id: nanoid(),
@@ -57,10 +59,7 @@ app.use("*", (req, res) => {
 });
 
 //error middleware
-app.use((err, req, res, next) => {
-  console.log(err);
-  res.status(500).json({ msg: "something went wrong!!" });
-});
+app.use(errorHandlerMiddleware);
 
 const port = process.env.PORT || 5100;
 const startServer = async () => {
