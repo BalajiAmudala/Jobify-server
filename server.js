@@ -4,7 +4,9 @@ import express from "express";
 const app = express();
 import morgan from "morgan";
 import { nanoid } from "nanoid";
-
+import mongoose from "mongoose";
+//routers
+import jobRouter from "./routes/jobRouter.js";
 let jobs = [
   {
     id: nanoid(),
@@ -33,65 +35,22 @@ app.post("/", (req, res) => {
   res.json({ message: "data received", data: req.body });
 });
 
-//GET ALL JOBS
-app.get("/api/v1/jobs", (req, res) => {
-  res.status(200).json({ jobs });
-});
+// //GET ALL JOBS
+// app.get("/api/v1/jobs");
 
-//CREATE JOB
-app.post("/api/v1/jobs", (req, res) => {
-  const { company, position } = req.body;
-  if (!company || !position) {
-    res.status(400).json({ message: "Please provide company and position !!" });
-    return;
-  }
-  const id = nanoid(10);
-  const job = { id, company, position };
-  jobs.push(job);
-  res.status(201).json({ job });
-});
+// //CREATE JOB
+// app.post("/api/v1/jobs");
 
-//GET SINGLE JOB
-app.get("/api/v1/jobs/:id", (req, res) => {
-  const { id } = req.params;
-  const job = jobs.find((job) => job.id === id);
-  if (!job) {
-    return res.status(404).json({ message: `no job with id ${id}` });
-  }
-  res.status(200).json({ job });
-});
+// //GET SINGLE JOB
+// app.get("/api/v1/jobs/:id");
 
-//EDIT JOB
-app.patch("/api/v1/jobs/:id", (req, res) => {
-  const { company, position } = req.body;
-  if (!company || !position) {
-    return res
-      .status(400)
-      .json({ message: "Please provide company and position !!" });
-  }
+// //EDIT JOB
+// app.patch("/api/v1/jobs/:id");
 
-  const { id } = req.params;
-  const job = jobs.find((job) => job.id === id);
-  if (!job) {
-    return res.status(404).json({ message: `no job with id ${id}` });
-  }
-  job.company = company;
-  job.position = position;
-  res.status(200).json({ msg: "job modified", job });
-});
+// //DELETE JOB
+// app.delete("/api/v1/jobs/:id");
 
-//DELETE JOB
-app.delete("/api/v1/jobs/:id", (req, res) => {
-  const { id } = req.params;
-  const job = jobs.find((job) => job.id === id);
-  if (!job) {
-    return res.status(404).json({ message: `no job with id ${id}` });
-  }
-  const newJobs = jobs.filter((job) => job.id !== id);
-  jobs = newJobs;
-
-  res.status(200).json({ message: "JOB deleted !!" });
-});
+app.use("/api/v1/jobs", jobRouter);
 
 app.use("*", (req, res) => {
   res.status(404).json({ msg: "not found!" });
@@ -104,6 +63,32 @@ app.use((err, req, res, next) => {
 });
 
 const port = process.env.PORT || 5100;
-app.listen(port, () => {
-  console.log(`server running on ${port}...`);
-});
+const startServer = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URL);
+    app.listen(port, () => {
+      console.log(`server running on PORT ${port}`);
+    });
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+};
+startServer();
+
+// mongoose
+//   .connect(process.env.MONGO_URL)
+//   .then(() => {
+//     console.log("Connected to MongoDB");
+//     app.listen(port, () => {
+//       console.log(`server running on ${port}...`);
+//     });
+//   })
+//   .catch((err) => {
+//     console.error("MongoDB connection failed:", err);
+//     process.exit(1);
+//   });
+
+// app.listen(port, () => {
+//   console.log(`server running on ${port}...`);
+// });
